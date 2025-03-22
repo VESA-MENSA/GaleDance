@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity Web Player | GaleDance</title>
+    <style>
+        #fixed-buttons {
+          position: fixed;
+          bottom: 0;       
+          left: 0;
+          width: 100%;  
+          background-color: #ccc;
+          text-align: center; 
+          padding: 8px;
+        }
+        #notice {
+          margin: 10px auto; 
+          max-width: 1280px; /* 게임 캔버스 폭에 맞춰 제한 */
+          font-size: 14px;
+          line-height: 1.5;
+          color: #721313;
+          padding: 0 10px;
+        }
+        #credit-notice {
+          margin: 10px auto; 
+          max-width: 1280px; /* 게임 캔버스 폭에 맞춰 제한 */
+          font-size: 8px;
+          line-height: 1;
+          color: #333;
+          padding: 0 10px;
+        }
+        #credit-notice p {
+          margin: 0.5em 0;
+        }
+    </style>
+    
+  </head>
+  <body style="text-align: center; padding: 0; border: 0; margin: 0;">
+        <canvas id="unity-canvas" width=1280 height=720 tabindex="-1" style="width: 1280px; height: 720px; background: #231F20"></canvas>
+        <script src="Build/GaleDance_03230308.loader.js"></script>
+
+        <script>
+          // 전역 변수로 선언
+          let unityInstance = null;
+
+          // file input이 변경되면, 선택된 파일을 읽고 Unity로 보낸다
+          function OnFileSelected(event) {
+            // 아직 unityInstance가 준비되지 않은 경우에 대한 방어 로직
+            if (!unityInstance) {
+              alert("Unity가 아직 로드되지 않았습니다!");
+              return;
+            }
+
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const base64Data = e.target.result; // data:image/png;base64, ...
+              // Unity로 메시지 보내기
+              unityInstance.SendMessage('CharMaker', 'OnImagePicked', base64Data);
+            };
+            reader.readAsDataURL(file);
+          }
+        </script>
+
+        <script>
+          if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            var meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+            document.head.appendChild(meta);
+
+            var canvas = document.querySelector("#unity-canvas");
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
+            canvas.style.position = "fixed";
+
+            document.body.style.textAlign = "left";
+          }
+
+          // Unity 인스턴스 생성 (비동기)
+          createUnityInstance(document.querySelector("#unity-canvas"), {
+            dataUrl: "Build/GaleDance_03230308.data",
+            frameworkUrl: "Build/GaleDance_03230308.framework.js",
+            codeUrl: "Build/GaleDance_03230308.wasm",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "DefaultCompany",
+            productName: "GaleDance",
+            productVersion: "1.0",
+          }).then((instance) => {
+            unityInstance = instance;
+            console.log("Unity WebGL 로딩 완료!");
+          }).catch((message) => {
+            alert("Unity 로딩 중 오류가 발생했습니다: " + message);
+          });
+        </script>
+
+        <div id="fixed-buttons">
+          <button onclick="DownloadImage()">Head 이미지 다운로드</button>
+          <input type="file" id="fileInput" accept="image/*" onchange="OnFileSelected(event)">
+        </div>
+    
+        <script>
+          function DownloadImage() {
+            const url = "Images/Head.png";
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = "Head.png";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+        </script>
+
+        <div id="notice">
+          <p><b>[플레이방법]</b></p>
+          <p>스페이스바 or 마우스 왼쪽 클릭 : 춤추기</p>
+          <P>끝! (게일이 안 보고 있을 때 춤을 추시오)</P>
+        </div>
+
+        <div id="credit-notice">
+          <p>본 게임은 Larian Studios의 『발더스 게이트 3』를 소재로 한 2차 창작물이며, 농약중독자님의 「선생님 안 볼 때 춤추기」 플래시 게임을 패러디하여 제작하였습니다.</p>
+          <p>본 게임은 순수히 팬아트적 성격의 비영리 프로젝트로, 상업적 이용이나 수익 창출을 목적으로 하지 않습니다.</p>
+          <p>저작권자의 요청이 있거나 문제가 발생할 경우, 즉시 수정 및 삭제 등 필요한 조치를 취하겠습니다.</p>
+          <p>Down By The River remix = 크레페 P0ly_m0rph님 커미션</p>
+        </div>
+  </body>
+</html>
